@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Questions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>HOD Panel</h3>
+                <p>Approval Workflow</p>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('hod_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('hod_pending_questions') }}">Pending Questions</a>
+            <a href="{{ url_for('hod_approved_questions') }}" class="active-link">Approved Questions</a>
+            <a href="{{ url_for('hod_rejected_questions') }}">Rejected Questions</a>
+            <a href="{{ url_for('hod_faculty_submissions') }}">Faculty Submissions</a>
+            <a href="{{ url_for('add_faculty') }}">Add New Faculty</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Approved Questions</h1>
+                <p>All approved faculty questions</p>
+            </div>
+        </div>
+
+       <section class="panel-card full-panel">
+    <h3>Approved Questions</h3>
+
+    <table class="activity-table">
+        <tr>
+            <th>Question ID</th>
+            <th>Faculty ID</th>
+            <th>Faculty Name</th>
+            <th>Subject</th>
+            <th>Module</th>
+            <th>Question Text</th>
+            <th>Answer Text</th>
+            <th>Marks</th>
+            <th>Difficulty</th>
+            <th>Bloom's Level</th>
+            <th>Status</th>
+            <th>Reject Reason</th>
+        </tr>
+
+        {% for q in questions %}
+        <tr>
+            <td>{{ q.question_id }}</td>
+            <td>{{ q.faculty_id }}</td>
+            <td>{{ q.faculty_name }}</td>
+            <td>{{ q.subject_name if q.subject_name else "None" }}</td>
+            <td>{{ q.module_name if q.module_name else "None" }}</td>
+            <td>{{ q.question_text }}</td>
+            <td>{{ q.answer_text }}</td>
+            <td>{{ q.marks }}</td>
+            <td>{{ q.difficulty }}</td>
+            <td>{{ q.blooms_level if q.blooms_level else "None" }}</td>
+            <td>Approved</td>
+            <td>{{ q.reject_reason if q.reject_reason else "-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</section>
+    </main>
+</body>
+</html>

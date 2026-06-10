@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add HOD</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="form-body">
+    <div class="form-wrapper">
+        <div class="form-card">
+            <h2>Add HOD</h2>
+
+            {% if message %}
+                <div class="message success-message">{{ message }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <label>Name</label>
+                <input type="text" name="name" required>
+
+                <label>Email</label>
+                <input type="email" name="email" required>
+
+                <label>Password</label>
+                <input type="password" name="password" required>
+
+                <label>Department</label>
+                <input type="text" name="department" required>
+
+               
+                <button type="submit" class="btn btn-primary full-width">Create HOD</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

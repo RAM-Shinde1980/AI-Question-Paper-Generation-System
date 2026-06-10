@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Questions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>HOD Panel</h3>
+                <p>Approval Workflow</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('hod_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('hod_pending_questions') }}" class="active-link">Pending Questions</a>
+            <a href="{{ url_for('hod_approved_questions') }}">Approved Questions</a>
+            <a href="{{ url_for('hod_rejected_questions') }}">Rejected Questions</a>
+            <a href="{{ url_for('hod_faculty_submissions') }}">Faculty Submissions</a>
+            <a href="{{ url_for('add_faculty') }}">Add New Faculty</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Pending Questions</h1>
+                <p>Review pending faculty-submitted questions</p>
+            </div>
+            <div class="status-pill">HOD Access Active</div>
+        </div>
+
+        <section class="panel-card full-panel">
+    <h3>Pending Question Review</h3>
+
+    <table class="activity-table">
+        <tr>
+            <th>Question ID</th>
+            <th>Faculty ID</th>
+            <th>Faculty Name</th>
+            <th>Subject</th>
+            <th>Module</th>
+            <th>Question Text</th>
+            <th>Question File</th>
+            <th>Answer Text</th>
+            <th>Answer File</th>
+            <th>Marks</th>
+            <th>Difficulty</th>
+            <th>Bloom's Level</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        {% for q in questions %}
+        <tr>
+            <td>{{ q.question_id }}</td>
+            <td>{{ q.faculty_id }}</td>
+            <td>{{ q.faculty_name }}</td>
+            <td>{{ q.subject_name if q.subject_name else "None" }}</td>
+            <td>{{ q.module_name if q.module_name else "None" }}</td>
+
+            <td>{{ q.question_text if q.question_text else "-" }}</td>
+
+            <td>
+                {% if q.question_file %}
+                    <a href="{{ url_for('uploaded_file', filename=q.question_file) }}" target="_blank">View Question File</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>{{ q.answer_text if q.answer_text else "-" }}</td>
+
+            <td>
+                {% if q.answer_file %}
+                    <a href="{{ url_for('uploaded_file', filename=q.answer_file) }}" target="_blank">View Answer File</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>{{ q.marks }}</td>
+            <td>{{ q.difficulty }}</td>
+            <td>{{ q.blooms_level if q.blooms_level else "None" }}</td>
+            <td>Pending</td>
+
+            <td>
+                <a href="{{ url_for('approve', qid=q.question_id) }}">Approve</a>
+
+                <form action="{{ url_for('reject', qid=q.question_id) }}" method="POST" style="margin-top:8px;">
+                    <input type="text" name="reject_reason" placeholder="Reject reason" required>
+                    <button type="submit">Reject</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</section>
+    </main>
+
+</body>
+</html>

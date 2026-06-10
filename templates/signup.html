@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - QPG System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a, #0ea5e9);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .signup-container {
+            width: 460px;
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+        }
+
+        .signup-container h2 {
+            text-align: center;
+            margin: 0 0 8px 0;
+            font-size: 30px;
+            color: #0f172a;
+        }
+
+        .signup-container p {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(90deg, #2563eb, #4f46e5);
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.95;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-box {
+            width: 400px;
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            color: #166534;
+            font-size: 24px;
+        }
+
+        .modal-box p {
+            margin: 10px 0;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .user-id-box {
+            margin: 16px 0;
+            padding: 14px;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .modal-box button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-container">
+    <h2>Create Account</h2>
+    <p>Register for Question Paper Generator System</p>
+
+    <form method="POST">
+        <label>Name</label>
+        <input type="text" name="name" placeholder="Enter your name" required>
+
+        <label>Email</label>
+        <input type="email" name="email" placeholder="Enter your email" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" required>
+
+        <label>Department</label>
+        <input type="text" name="department" placeholder="e.g. computer / CSE" required>
+
+       
+        <label>Role</label>
+        <select name="role" required>
+            <option value="">Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="hod">HOD</option>
+          
+        </select>
+<button type="submit" class="btn btn-primary w-100">
+    Create Account
+</button>
+      
+    </form>
+
+    <div class="login-link">
+        Already have an account? <a href="{{ url_for('login') }}">Login</a>
+    </div>
+</div>
+
+{% if popup_user_id %}
+<div class="modal-overlay" id="signupModal">
+    <div class="modal-box">
+        <h3>Account Created</h3>
+        <p>Your account has been created successfully.</p>
+        <p>Your generated User ID is:</p>
+        <div class="user-id-box">{{ popup_user_id }}</div>
+        <p>Please save this User ID for login.</p>
+        <button onclick="goToLogin()">Go to Login</button>
+    </div>
+</div>
+
+<script>
+    function goToLogin() {
+        window.location.href = "{{ url_for('login') }}";
+    }
+</script>
+{% endif %}
+
+</body>
+</html>

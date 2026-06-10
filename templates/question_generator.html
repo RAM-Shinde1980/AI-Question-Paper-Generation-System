@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>Admin Panel</h3>
+                <p>System Control</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('add_hod') }}">Add HOD</a>
+            <a href="{{ url_for('view_hods') }}">View HOD List</a>
+            <a href="{{ url_for('question_generator') }}" class="active-link">Question Generator</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Question Generator</h1>
+                <p>Filter approved questions and generate question set</p>
+            </div>
+            <div class="status-pill">Admin Access Active</div>
+        </div>
+
+        <section class="panel-card">
+            <h3>Filter Questions</h3>
+
+            {% if message %}
+                <div class="message error-message">{{ message }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <label>Subject</label>
+                <select name="subject_id">
+                    <option value="">All Subjects</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.subject_id }}">{{ sub.subject_name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Marks</label>
+                <select name="marks">
+                    <option value="">All Marks</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="10">10</option>
+                </select>
+
+                <label>Difficulty</label>
+                <select name="difficulty">
+                    <option value="">All Difficulty</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+
+                <label>Bloom's Level</label>
+                <select name="blooms_level">
+                    <option value="">All Bloom's Levels</option>
+                    <option value="Remember">Remember</option>
+                    <option value="Understand">Understand</option>
+                    <option value="Apply">Apply</option>
+                    <option value="Analyze">Analyze</option>
+                    <option value="Evaluate">Evaluate</option>
+                    <option value="Create">Create</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary full-width">Generate Questions</button>
+            </form>
+        </section>
+
+        <section class="panel-card full-panel" style="margin-top: 20px;">
+            <h3>Generated Questions</h3>
+
+            <table class="activity-table">
+                <tr>
+                    <th>Question ID</th>
+                    <th>Subject</th>
+                    <th>Module</th>
+                    <th>Question Text</th>
+                    <th>Answer Text</th>
+                    <th>Marks</th>
+                    <th>Difficulty</th>
+                    <th>Bloom's Level</th>
+                </tr>
+
+                {% for q in generated_questions %}
+                <tr>
+                    <td>{{ q.question_id }}</td>
+                    <td>{{ q.subject_name if q.subject_name else "None" }}</td>
+                    <td>{{ q.module_name if q.module_name else "None" }}</td>
+                    <td>{{ q.question_text if q.question_text else "-" }}</td>
+                    <td>{{ q.answer_text if q.answer_text else "-" }}</td>
+                    <td>{{ q.marks }}</td>
+                    <td>{{ q.difficulty }}</td>
+                    <td>{{ q.blooms_level }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+    </main>
+
+</body>
+</html>

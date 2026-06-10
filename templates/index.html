@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Question Paper Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home-body">
+
+    <nav class="navbar">
+        <div class="logo-area">
+            <div class="logo-box">QPG</div>
+            <div>
+                <h2 class="logo-title">Question Paper Generator</h2>
+                <p class="logo-subtitle">AI Based Academic Automation</p>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-left">
+            <span class="badge">NIELIT Internship Project</span>
+            <h1>AI-Based Question Paper Generator System</h1>
+            <p>
+                A smart and role-based web platform for Admin, HOD, and Faculty
+                to manage question banks, approve content, and generate balanced question papers efficiently.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login Now</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-outline">Create Account</a>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="glass-card">
+                <h3>Project Highlights</h3>
+                <ul>
+                    <li>Role-based login system</li>
+                    <li>Question bank management</li>
+                    <li>HOD approval workflow</li>
+                    <li>Subject and module handling</li>
+                    <li>Question paper generation support</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-section">
+        <div class="feature-card">
+            <div class="feature-icon">👨‍💼</div>
+            <h3>Admin Control</h3>
+            <p>Manage users, subjects, modules, and overall system activities from a centralized dashboard.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">✅</div>
+            <h3>HOD Approval</h3>
+            <p>Review and approve submitted questions before they are used in final question papers.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Faculty Submission</h3>
+            <p>Faculty can add and organize questions with marks, difficulty level, and Bloom’s taxonomy.</p>
+        </div>
+    </section>
+
+</body>
+</html>

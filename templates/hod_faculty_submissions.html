@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Submissions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>HOD Panel</h3>
+                <p>Approval Workflow</p>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('hod_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('hod_pending_questions') }}">Pending Questions</a>
+            <a href="{{ url_for('hod_approved_questions') }}">Approved Questions</a>
+            <a href="{{ url_for('hod_rejected_questions') }}">Rejected Questions</a>
+            <a href="{{ url_for('hod_faculty_submissions') }}" class="active-link">Faculty Submissions</a>
+            <a href="{{ url_for('add_faculty') }}">Add New Faculty</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Faculty Submissions</h1>
+                <p>Department faculty list and question counts</p>
+            </div>
+        </div>
+
+        <section class="panel-card full-panel">
+            <table class="activity-table">
+    <tr>
+        <th>User ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Department</th>
+        <th>Assigned Subjects</th>
+        <th>Total Questions</th>
+    </tr>
+
+    {% for f in faculty_list %}
+    <tr>
+        <td>{{ f.user_id }}</td>
+        <td>{{ f.name }}</td>
+        <td>{{ f.email }}</td>
+        <td>{{ f.department }}</td>
+        <td>{{ f.assigned_subjects if f.assigned_subjects else "No subject assigned" }}</td>
+        <td>{{ f.total_questions }}</td>
+    </tr>
+    {% endfor %}
+</table>
+        </section>
+    </main>
+</body>
+</html>

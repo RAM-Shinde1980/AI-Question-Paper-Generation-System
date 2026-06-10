@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Question</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="form-body">
+
+    <div class="form-wrapper">
+        <div class="form-card">
+            <h2>Add Question</h2>
+            <p class="form-subtitle">Submit question for HOD approval</p>
+
+            {% if message %}
+                <div class="message success-message">{{ message }}</div>
+            {% endif %}
+
+            {% if assigned_subjects|length == 0 %}
+                <div class="message error-message">
+                    No subject assigned by HOD yet. You cannot add question.
+                </div>
+            {% else %}
+            <form method="POST" enctype="multipart/form-data">
+                
+                {% if assigned_subjects|length == 1 %}
+                    <label>Assigned Subject</label>
+                    <input type="text" value="{{ assigned_subjects[0].subject_name }}" readonly>
+                    <input type="hidden" name="subject_id" value="{{ assigned_subjects[0].subject_id }}">
+
+                {% else %}
+                    <label>Select Assigned Subject</label>
+                    <select name="subject_id" id="subject_id" required onchange="loadModules()">
+                        <option value="">Select Subject</option>
+                        {% for sub in assigned_subjects %}
+                            <option value="{{ sub.subject_id }}">{{ sub.subject_name }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                <label>Module</label>
+                <select name="module_id" id="module_id" required>
+                    <option value="">Select Module</option>
+                </select>
+
+               <label>Question Text</label>
+<textarea name="question_text" rows="5"></textarea>
+
+
+
+<label>Answer Text</label>
+<textarea name="answer_text" rows="5"></textarea>
+
+
+                <label>Marks</label>
+                <select name="marks" required>
+                    <option value="">Select Marks</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="10">10</option>
+                </select>
+
+                <label>Difficulty</label>
+                <select name="difficulty" required>
+                    <option value="">Select Difficulty</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+
+                <label>Bloom's Level</label>
+                <select name="blooms_level" required>
+                    <option value="">Select Bloom's Level</option>
+                    <option value="Remember">Remember</option>
+                    <option value="Understand">Understand</option>
+                    <option value="Apply">Apply</option>
+                    <option value="Analyze">Analyze</option>
+                    <option value="Evaluate">Evaluate</option>
+                    <option value="Create">Create</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary full-width">Add Question</button>
+            </form>
+            {% endif %}
+
+            <div style="margin-top:10px;">
+                <a href="{{ url_for('faculty_dashboard') }}" class="btn btn-primary full-width" style="text-align:center; display:block;">
+                    Back to Faculty Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadModules() {
+            const subjectSelect = document.getElementById("subject_id");
+            const moduleSelect = document.getElementById("module_id");
+
+            if (!moduleSelect) return;
+
+            moduleSelect.innerHTML = '<option value="">Select Module</option>';
+
+            if (!subjectSelect || !subjectSelect.value) return;
+
+            const response = await fetch(`/get_modules/${subjectSelect.value}`);
+            const modules = await response.json();
+
+            modules.forEach(module => {
+                const option = document.createElement("option");
+                option.value = module.module_id;
+                option.textContent = module.module_name;
+                moduleSelect.appendChild(option);
+            });
+        }
+
+        // if only one subject is assigned, auto load modules for that subject
+        window.onload = async function() {
+            const hiddenSubject = document.querySelector('input[name="subject_id"]');
+            const moduleSelect = document.getElementById("module_id");
+
+            if (hiddenSubject && moduleSelect) {
+                const response = await fetch(`/get_modules/${hiddenSubject.value}`);
+                const modules = await response.json();
+
+                moduleSelect.innerHTML = '<option value="">Select Module</option>';
+
+                modules.forEach(module => {
+                    const option = document.createElement("option");
+                    option.value = module.module_id;
+                    option.textContent = module.module_name;
+                    moduleSelect.appendChild(option);
+                });
+            }
+        };
+    </script>
+
+</body>
+</html>

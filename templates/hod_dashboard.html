@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOD Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>HOD Panel</h3>
+                <p>Approval Workflow</p>
+            </div>
+        </div>
+<nav class="sidebar-nav">
+    <a href="{{ url_for('hod_dashboard') }}" class="active-link">Dashboard</a>
+    <a href="{{ url_for('hod_pending_questions') }}">Pending Questions</a>
+    <a href="{{ url_for('hod_approved_questions') }}">Approved Questions</a>
+    <a href="{{ url_for('hod_rejected_questions') }}">Rejected Questions</a>
+    <a href="{{ url_for('hod_faculty_submissions') }}">Faculty Submissions</a>
+    <a href="{{ url_for('add_faculty') }}">Add New Faculty</a>
+    <a href="{{ url_for('assign_subjects') }}">Assign Subjects</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+
+           <div class="d-flex justify-content-between align-items-start mb-4">
+
+    <!-- LEFT SIDE -->
+    <div>
+        <h2 style="font-weight: bold;">
+            Welcome, {{ session['name'] }}
+        </h2>
+
+       
+    </div>
+
+   
+
+
+
+<!-- CENTER -->
+<div class="text-center mb-4">
+
+    <h3 style="font-weight: bold;">
+        Department of {{ session['department'] }}
+    </h3>
+
+</div>
+            <p>Review, approve, and monitor faculty-submitted questions</p>    
+            </div>
+            <div class="status-pill">HOD Access Active</div>
+        </div>
+
+     <section class="stats-grid">
+    <div class="stat-card blue-card">
+        <h3>Total Faculty</h3>
+        <p>{{ total_faculty }}</p>
+    </div>
+
+    <div class="stat-card purple-card">
+        <h3>Pending Review</h3>
+        <p>{{ pending_count }}</p>
+    </div>
+
+    <div class="stat-card green-card">
+        <h3>Approved</h3>
+        <p>{{ approved_count }}</p>
+    </div>
+
+    <div class="stat-card orange-card">
+        <h3>Rejected</h3>
+        <p>{{ rejected_count }}</p>
+    </div>
+</section>
+
+        <section class="dashboard-panels">
+           <div class="action-buttons">
+    <a href="{{ url_for('hod_pending_questions') }}" class="action-link">Review Pending Questions</a>
+    <a href="{{ url_for('hod_approved_questions') }}" class="action-link">Approve Questions</a>
+    <a href="{{ url_for('hod_rejected_questions') }}" class="action-link">Reject Questions</a>
+    <a href="{{ url_for('hod_faculty_submissions') }}" class="action-link">View Faculty Activity</a>
+</div>
+
+           <div class="panel-card">
+    <h3>Approval Overview</h3>
+    <div class="overview-grid">
+        <div class="mini-card">
+            <p>Pending</p>
+            <h2>{{ pending_count }}</h2>
+        </div>
+        <div class="mini-card">
+            <p>Approved</p>
+            <h2>{{ approved_count }}</h2>
+        </div>
+        <div class="mini-card">
+            <p>Rejected</p>
+            <h2>{{ rejected_count }}</h2>
+        </div>
+        <div class="mini-card">
+            <p>Total Faculty</p>
+            <h2>{{ total_faculty }}</h2>
+        </div>
+    </div>
+</div>
+        </section>
+
+       <section class="panel-card full-panel">
+    <h3>Pending Question Review</h3>
+
+    <table class="activity-table">
+        <tr>
+            <th>Question ID</th>
+            <th>Faculty</th>
+            <th>Subject</th>
+            <th>Module</th>
+            <th>Marks</th>
+            <th>Status</th>
+        </tr>
+
+        {% if questions %}
+            {% for q in questions %}
+            <tr>
+                <td>{{ q.question_id }}</td>
+                <td>{{ q.faculty_name }}</td>
+                <td>{{ q.subject_name if q.subject_name else "None" }}</td>
+                <td>{{ q.module_name if q.module_name else "None" }}</td>
+                <td>{{ q.marks }}</td>
+                <td>
+                    {% if q.approved == 'N' %}
+                        Pending
+                    {% elif q.approved == 'Y' %}
+                        Approved
+                    {% else %}
+                        Rejected
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="6" style="text-align:center;">No pending questions found.</td>
+            </tr>
+        {% endif %}
+    </table>
+</section>
+    </main>
+
+</body>
+</html>

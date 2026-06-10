@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>Admin Panel</h3>
+                <p>System Control</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="active-link">Dashboard</a>
+            <a href="{{ url_for('add_hod') }}">Add HOD</a>
+            <a href="{{ url_for('view_hods') }}">View HOD List</a>
+            <a href="{{ url_for('question_generator') }}">Question Generator</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Welcome, Admin</h1>
+                <p>Manage HODs and monitor the full system</p>
+            </div>
+            <div class="status-pill">Admin Access Active</div>
+        </div>
+
+        <section class="stats-grid">
+            <div class="stat-card blue-card">
+                <h3>Total HODs</h3>
+                <p>{{ total_hods }}</p>
+            </div>
+
+            <div class="stat-card purple-card">
+                <h3>Total Faculty</h3>
+                <p>{{ total_faculty }}</p>
+            </div>
+
+            <div class="stat-card green-card">
+                <h3>Total Questions</h3>
+                <p>{{ total_questions }}</p>
+            </div>
+
+            <div class="stat-card orange-card">
+                <h3>Pending Questions</h3>
+                <p>{{ pending_questions }}</p>
+            </div>
+        </section>
+
+        <section class="dashboard-panels">
+            <div class="panel-card">
+                <h3>Quick Actions</h3>
+               <nav class="sidebar-nav">
+    <a href="{{ url_for('admin_dashboard') }}" class="active-link">Dashboard</a>
+
+    <a href="{{ url_for('add_hod') }}">Add HOD</a>
+
+    <a href="{{ url_for('view_hods') }}">View HOD List</a>
+
+    <a href="{{ url_for('question_generator') }}">
+        Question Bank
+    </a>
+
+    <a href="{{ url_for('generate_question_paper') }}">
+        📄 Generate Question Paper
+    </a>
+
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+            </div>
+
+            <div class="panel-card">
+                <h3>System Overview</h3>
+                <p><strong>Admin controls:</strong> HOD creation, HOD monitoring, and system supervision.</p>
+                <p style="margin-top:10px;"><strong>Workflow:</strong> Admin → HOD → Faculty → Question Approval</p>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box small-logo">QPG</div>
+            <div>
+                <h3>Faculty Panel</h3>
+                <p>Question Submission</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('faculty_dashboard') }}" class="active-link">Dashboard</a>
+            <a href="{{ url_for('add_question') }}">Add Question</a>
+            <a href="#myquestions">My Questions</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        <div class="sidebar-profile">
+            <h4>My Profile</h4>
+            <p><strong>ID:</strong> {{ profile.user_id }}</p>
+            <p><strong>Name:</strong> {{ profile.name }}</p>
+            <p><strong>Email:</strong> {{ profile.email }}</p>
+            <p><strong>Dept:</strong> {{ profile.department }}</p>
+            <p><strong>Role:</strong> {{ profile.role }}</p>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-top">
+            <div>
+                <h1>Welcome, {{ profile.name }}</h1>
+                <p>Manage your submitted questions and check approval status</p>
+            </div>
+            <div class="status-pill">Faculty Access Active</div>
+        </div>
+
+        <section class="stats-grid">
+            <div class="stat-card blue-card">
+                <h3>Total Submitted</h3>
+                <p>{{ my_questions|length }}</p>
+            </div>
+
+            <div class="stat-card purple-card">
+                <h3>Pending</h3>
+                <p>{{ my_questions | selectattr('approved', 'equalto', 'N') | list | length }}</p>
+            </div>
+
+            <div class="stat-card green-card">
+                <h3>Approved</h3>
+                <p>{{ my_questions | selectattr('approved', 'equalto', 'Y') | list | length }}</p>
+            </div>
+
+            <div class="stat-card orange-card">
+                <h3>Rejected</h3>
+                <p>{{ my_questions | selectattr('approved', 'equalto', 'R') | list | length }}</p>
+            </div>
+        </section>
+<section class="panel-card full-panel">
+    <h3>Assigned Subjects</h3>
+
+    {% if assigned_subjects %}
+        <table class="activity-table">
+            <tr>
+                <th>Subject ID</th>
+                <th>Subject Name</th>
+            </tr>
+
+            {% for sub in assigned_subjects %}
+            <tr>
+                <td>{{ sub.subject_id }}</td>
+                <td>{{ sub.subject_name }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No subject assigned by HOD yet.</p>
+    {% endif %}
+</section>
+        <section class="panel-card full-panel" id="myquestions">
+            <h3>My Questions</h3>
+            <table class="activity-table">
+                <tr>
+                    <th>Question ID</th>
+                    <th>Subject</th>
+                    <th>Module</th>
+                    <th>Question Text</th>
+                    <th>Answer Text</th>
+                    <th>Marks</th>
+                    <th>Difficulty</th>
+                    <th>Bloom's Level</th>
+                    <th>Status</th>
+                    <th>Reject Reason</th>
+                </tr>
+
+                {% for q in my_questions %}
+                <tr>
+                    <td>{{ q.question_id }}</td>
+                    <td>{{ q.subject_name if q.subject_name else "None" }}</td>
+                    <td>{{ q.module_name if q.module_name else "None" }}</td>
+                    <td>{{ q.question_text }}</td>
+                    <td>{{ q.answer_text }}</td>
+                    <td>{{ q.marks }}</td>
+                    <td>{{ q.difficulty }}</td>
+                    <td>{{ q.blooms_level if q.blooms_level else "None" }}</td>
+                    <td>
+                        {% if q.approved == 'Y' %}
+                            Approved
+                        {% elif q.approved == 'R' %}
+                            Rejected
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                    <td>{{ q.reject_reason if q.reject_reason else "-" }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+    </main>
+
+</body>
+</html>

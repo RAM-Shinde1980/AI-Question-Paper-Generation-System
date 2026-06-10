@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Subjects</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="form-body">
+
+    <div class="form-wrapper">
+        <div class="form-card">
+            <h2>Assign Subjects</h2>
+            <p class="form-subtitle">Assign one or more existing subjects to faculty</p>
+
+            {% if message %}
+                <div class="message success-message">{{ message }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <label>Select Faculty</label>
+                <select name="faculty_id" required>
+                    <option value="">Select Faculty</option>
+                    {% for fac in faculty_list %}
+                        <option value="{{ fac.user_id }}">{{ fac.name }} (ID: {{ fac.user_id }})</option>
+                    {% endfor %}
+                </select>
+
+             
+
+<div style="margin-bottom:15px;">
+    {% for sub in subjects %}
+        <div style="margin-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" name="subject_ids" value="{{ sub.subject_id }}">
+                {{ sub.subject_name }}
+            </label>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+function validateSubjectAssignment() {
+    const checkedSubjects = document.querySelectorAll('input[name="subject_ids"]:checked');
+    const newSubject = document.querySelector('input[name="new_subject"]').value.trim();
+
+    if (checkedSubjects.length === 0 && newSubject === "") {
+        alert("Please select at least one subject or enter a new subject.");
+        return false;
+    }
+
+    return true;
+}
+</script>
+
+<!-- NEW: Add custom subject -->
+<label>Add Subject <span style="color:red;">*</span></label>
+<input type="text" name="new_subject" placeholder="Enter new subject name">
+
+                <button type="submit" class="btn btn-primary full-width">Assign Subjects</button>
+            </form>
+
+            <div style="margin-top: 10px;">
+                <a href="{{ url_for('hod_dashboard') }}" class="btn btn-primary full-width" style="display:block; text-align:center; text-decoration:none;">
+                    Back to HOD Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
