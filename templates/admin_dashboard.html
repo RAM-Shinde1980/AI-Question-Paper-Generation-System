@@ -8,6 +8,7 @@
 </head>
 <body class="dashboard-body">
 
+    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo-box small-logo">QPG</div>
@@ -23,11 +24,13 @@
             <a href="{{ url_for('view_hods') }}">View HOD List</a>
             <a href="{{ url_for('question_generator') }}">Question Generator</a>
             <a href="{{ url_for('logout') }}">Logout</a>
-            
         </nav>
     </aside>
 
+    <!-- Main Content -->
     <main class="dashboard-main">
+
+        <!-- Top Header -->
         <div class="dashboard-top">
             <div>
                 <h1>Welcome, Admin</h1>
@@ -36,7 +39,9 @@
             <div class="status-pill">Admin Access Active</div>
         </div>
 
+        <!-- Statistics Cards -->
         <section class="stats-grid">
+
             <div class="stat-card blue-card">
                 <h3>Total HODs</h3>
                 <p>{{ total_hods }}</p>
@@ -56,36 +61,48 @@
                 <h3>Pending Questions</h3>
                 <p>{{ pending_questions }}</p>
             </div>
+
         </section>
 
-        <section class="dashboard-panels">
-            <div class="panel-card">
-                <h3>Quick Actions</h3>
-               <nav class="sidebar-nav">
-    <a href="{{ url_for('admin_dashboard') }}" class="active-link">Dashboard</a>
+        <!-- Lower Dashboard -->
+        <section class="dashboard-lower">
 
-    <a href="{{ url_for('add_hod') }}">Add HOD</a>
-
-    <a href="{{ url_for('view_hods') }}">View HOD List</a>
-
-    <a href="{{ url_for('question_generator') }}">
-        Question Bank
-    </a>
-
-    <a href="{{ url_for('generate_question_paper') }}">
-        📄 Generate Question Paper
-    </a>
-
-    <a href="{{ url_for('logout') }}">Logout</a>
-</nav>
+            <!-- Recent Activity -->
+            <div class="panel-card recent-activity">
+                <h3>Recent Activity</h3>
+                <ul>
+                    {% for activity in recent_activities %}
+                        <li>
+                            {{ activity.activity_text }}
+                            <br>
+                            <small>{{ activity.activity_time }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
 
-            <div class="panel-card">
-                <h3>System Overview</h3>
-                <p><strong>Admin controls:</strong> HOD creation, HOD monitoring, and system supervision.</p>
-                <p style="margin-top:10px;"><strong>Workflow:</strong> Admin → HOD → Faculty → Question Approval</p>
+            <!-- Pending Approvals -->
+            <div class="panel-card pending-section">
+                <h3>Pending Approvals</h3>
+                <div class="pending-box">
+                    <h2>{{ pending_questions }}</h2>
+                    <p>Questions waiting for HOD approval</p>
+                </div>
             </div>
+
+            <!-- System Status -->
+            <div class="panel-card system-status">
+                <h3>System Status</h3>
+                <div class="status-list">
+                    <p>🟢 Database Connected</p>
+                    <p>🟢 AI Duplicate Check Active</p>
+                    <p>🟢 Question Generator Running</p>
+                    <p>🟢 Admin Access Enabled</p>
+                </div>
+            </div>
+
         </section>
+
     </main>
 
 </body>

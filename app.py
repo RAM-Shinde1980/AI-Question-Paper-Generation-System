@@ -4,7 +4,15 @@ import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from werkzeug.utils import secure_filename
 from sentence_transformers import SentenceTransformer, util
-import re
+from datetime import datetime
+from flask import session
+
+
+
+from flask import send_file
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 def get_db():
     return mysql.connector.connect(
@@ -106,6 +114,7 @@ def home():
 
 @app.route("/add_question", methods=["GET", "POST"])
 def add_question():
+
     if "user_id" not in session or session["role"] != "faculty":
         return redirect(url_for("login"))
 
@@ -121,11 +130,13 @@ def add_question():
         WHERE fs.faculty_id = %s
         ORDER BY s.subject_name
     """, (faculty_id,))
+
     assigned_subjects = cursor.fetchall()
 
     message = None
 
     if request.method == "POST":
+
         subject_id = request.form.get("subject_id")
         module_id = request.form.get("module_id")
         question_text = request.form.get("question_text")
@@ -134,34 +145,21 @@ def add_question():
         difficulty = request.form.get("difficulty")
         blooms_level = request.form.get("blooms_level")
 
-
-
         try:
-           
-            # =========================================
-            # AI DUPLICATE CHECK ADD HERE
-            # =========================================
-          
-            # FETCH OLD QUESTIONS
-            # ======================================
 
+            # Fetch existing questions
             check_cursor = conn.cursor(dictionary=True)
 
             check_cursor.execute("""
                 SELECT question_text, answer_text
                 FROM question
                 WHERE subject_id = %s
-               
             """, (subject_id,))
 
             existing_questions = check_cursor.fetchall()
-
             check_cursor.close()
 
-            # ======================================
-            # AI CHECK
-            # ======================================
-
+            # Duplicate check
             is_duplicate = False
 
             for q in existing_questions:
@@ -188,11 +186,6 @@ def add_question():
                     )
 
                     break
- 
-
-            # ======================================
-            # STOP INSERT IF DUPLICATE
-            # ======================================
 
             if is_duplicate:
 
@@ -205,51 +198,58 @@ def add_question():
                     message=message
                 )
 
-            # ======================================
-            # INSERT QUESTION
-            # ======================================
-
+            # Insert question
             insert_cursor = conn.cursor()
 
             insert_cursor.execute("""
-    INSERT INTO question
-    (
-        user_id,
-        subject_id,
-        module_id,
-        question_text,
-        answer_text,
-        marks,
-        difficulty,
-        blooms_level,
-        approved,
-        hod_id,
-        reject_reason
-    )
-    VALUES
-    (
-        %s,%s,%s,%s,%s,
-        %s,%s,%s,
-        'N',NULL,NULL
-    )
-""", (
-    faculty_id,
-    subject_id,
-    module_id,
-    question_text,
-    answer_text,
-    marks,
-    difficulty,
-    blooms_level
-))
+                INSERT INTO question
+                (
+                    user_id,
+                    subject_id,
+                    module_id,
+                    question_text,
+                    answer_text,
+                    marks,
+                    difficulty,
+                    blooms_level,
+                    approved,
+                    hod_id,
+                    reject_reason
+                )
+                VALUES
+                (
+                    %s,%s,%s,%s,%s,
+                    %s,%s,%s,
+                    'N', NULL, NULL
+                )
+            """, (
+                faculty_id,
+                subject_id,
+                module_id,
+                question_text,
+                answer_text,
+                marks,
+                difficulty,
+                blooms_level
+            ))
 
             conn.commit()
 
+            activity_cursor = conn.cursor()
+
+            activity_cursor.execute("""
+            INSERT INTO activity_log (activity_text)
+            VALUES (%s)
+              """, ("New question submitted by Faculty",))
+
+            conn.commit()
+            activity_cursor.close()
             insert_cursor.close()
 
             message = "Question added successfully."
 
         except Exception as e:
+
             message = f"Error while adding question: {e}"
 
     cursor.close()
@@ -260,7 +260,6 @@ def add_question():
         assigned_subjects=assigned_subjects,
         message=message
     )
-
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -442,18 +441,32 @@ def admin_dashboard():
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
 
+    # Total HODs
     cursor.execute("SELECT COUNT(*) AS total_hods FROM users WHERE role='hod'")
     total_hods = cursor.fetchone()["total_hods"]
 
+    # Total Faculty
     cursor.execute("SELECT COUNT(*) AS total_faculty FROM users WHERE role='faculty'")
     total_faculty = cursor.fetchone()["total_faculty"]
 
+    # Total Questions
     cursor.execute("SELECT COUNT(*) AS total_questions FROM question")
     total_questions = cursor.fetchone()["total_questions"]
 
+    # Pending Questions
     cursor.execute("SELECT COUNT(*) AS pending_questions FROM question WHERE approved='N'")
     pending_questions = cursor.fetchone()["pending_questions"]
 
+    # Recent Activities
+    cursor.execute("""
+        SELECT activity_text, activity_time
+        FROM activity_log
+        ORDER BY activity_time DESC
+        LIMIT 5
+    """)
+    recent_activities = cursor.fetchall()
+
+    # CLOSE AFTER ALL QUERIES
     cursor.close()
     conn.close()
 
@@ -462,63 +475,134 @@ def admin_dashboard():
         total_hods=total_hods,
         total_faculty=total_faculty,
         total_questions=total_questions,
-        pending_questions=pending_questions
+        pending_questions=pending_questions,
+        recent_activities=recent_activities
     )
+
 
 @app.route("/question_generator", methods=["GET", "POST"])
 def question_generator():
-    if "user_id" not in session or session["role"] != "admin":
-        return redirect(url_for("login"))
 
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
 
-    # load subjects
-    cursor.execute("SELECT subject_id, subject_name FROM subject ORDER BY subject_name")
+    cursor.execute("SELECT subject_id, subject_name FROM subject")
     subjects = cursor.fetchall()
 
-    generated_questions = []
-    message = None
+    generated_questions = {
+        "part_a": [],
+        "part_b": [],
+        "part_c": []
+    }
+
+    total_marks = 0
 
     if request.method == "POST":
-        subject_id = request.form.get("subject_id")
-        marks = request.form.get("marks")
-        difficulty = request.form.get("difficulty")
-        blooms_level = request.form.get("blooms_level")
 
-        query = """
-            SELECT q.question_id, q.question_text, q.answer_text, q.marks, q.difficulty, q.blooms_level,
-                   s.subject_name, m.module_name
-            FROM question q
-            LEFT JOIN subject s ON q.subject_id = s.subject_id
-            LEFT JOIN module m ON q.module_id = m.module_id
-            WHERE q.approved = 'Y'
-        """
-        values = []
+        subject_id = request.form["subject_id"]
+        total_marks = int(request.form["total_marks"])
+        difficulty = request.form["difficulty"]
 
-        if subject_id:
-            query += " AND q.subject_id = %s"
-            values.append(subject_id)
+        used_ids = []
+        current_total = 0
 
-        if marks:
-            query += " AND q.marks = %s"
-            values.append(marks)
+        # PART A (2 marks)
+        while current_total < (total_marks * 0.30):
 
-        if difficulty:
-            query += " AND q.difficulty = %s"
-            values.append(difficulty)
+            query = """
+                SELECT * FROM question
+                WHERE subject_id=%s
+                AND marks=2
+                AND difficulty=%s
+                AND approved='Y'
+            """
 
-        if blooms_level:
-            query += " AND q.blooms_level = %s"
-            values.append(blooms_level)
+            if used_ids:
+                query += " AND question_id NOT IN ({})".format(
+                    ",".join(["%s"] * len(used_ids))
+                )
 
-        query += " ORDER BY q.question_id DESC"
+            query += " ORDER BY RAND() LIMIT 1"
 
-        cursor.execute(query, tuple(values))
-        generated_questions = cursor.fetchall()
+            params = [subject_id, difficulty] + used_ids
 
-        if not generated_questions:
-            message = "No approved questions found for selected filters."
+            cursor.execute(query, params)
+            q = cursor.fetchone()
+
+            if not q:
+                break
+
+            generated_questions["part_a"].append(q)
+            used_ids.append(q["question_id"])
+            current_total += q["marks"]
+
+        # PART B (3 marks)
+        while current_total < (total_marks * 0.60):
+
+            query = """
+                SELECT * FROM question
+                WHERE subject_id=%s
+                AND marks=3
+                AND difficulty=%s
+                AND approved='Y'
+            """
+
+            if used_ids:
+                query += " AND question_id NOT IN ({})".format(
+                    ",".join(["%s"] * len(used_ids))
+                )
+
+            query += " ORDER BY RAND() LIMIT 1"
+
+            params = [subject_id, difficulty] + used_ids
+
+            cursor.execute(query, params)
+            q = cursor.fetchone()
+
+            if not q:
+                break
+
+            generated_questions["part_b"].append(q)
+            used_ids.append(q["question_id"])
+            current_total += q["marks"]
+
+        # PART C (10 marks)
+        while current_total < total_marks:
+
+            query = """
+                SELECT * FROM question
+                WHERE subject_id=%s
+                AND marks=10
+                AND difficulty=%s
+                AND approved='Y'
+            """
+
+            if used_ids:
+                query += " AND question_id NOT IN ({})".format(
+                    ",".join(["%s"] * len(used_ids))
+                )
+
+            query += " ORDER BY RAND() LIMIT 1"
+
+            params = [subject_id, difficulty] + used_ids
+
+            cursor.execute(query, params)
+            q = cursor.fetchone()
+
+            if not q:
+                break
+
+            if current_total + q["marks"] > total_marks:
+                break
+
+            generated_questions["part_c"].append(q)
+            used_ids.append(q["question_id"])
+            current_total += q["marks"]
+
+    
+
+    session["generated_questions"] = generated_questions
+    session["total_marks"] = total_marks
 
     cursor.close()
     conn.close()
@@ -527,8 +611,71 @@ def question_generator():
         "question_generator.html",
         subjects=subjects,
         generated_questions=generated_questions,
-        message=message
+        total_marks=total_marks
     )
+
+from flask import make_response
+from reportlab.pdfgen import canvas
+import io
+from datetime import datetime
+
+
+@app.route("/export_pdf")
+def export_pdf():
+
+    generated_questions = session.get("generated_questions", {})
+    total_marks = session.get("total_marks", 0)
+
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer)
+
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawString(150, 800, "AI Question Paper Generation System")
+
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, 770, f"Date: {datetime.now().strftime('%d-%m-%Y')}")
+    pdf.drawString(50, 750, f"Total Marks: {total_marks}")
+
+    y = 710
+
+    # PART A
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y, "PART A (2 Marks)")
+    y -= 30
+
+    for i, q in enumerate(generated_questions.get("part_a", []), start=1):
+        pdf.drawString(60, y, f"Q{i}. {q['question_text']} ({q['marks']} Marks)")
+        y -= 25
+
+    # PART B
+    pdf.drawString(50, y, "PART B (3 Marks)")
+    y -= 30
+
+    start_q = len(generated_questions.get("part_a", [])) + 1
+
+    for i, q in enumerate(generated_questions.get("part_b", []), start=start_q):
+        pdf.drawString(60, y, f"Q{i}. {q['question_text']} ({q['marks']} Marks)")
+        y -= 25
+
+    # PART C
+    pdf.drawString(50, y, "PART C (10 Marks)")
+    y -= 30
+
+    start_q += len(generated_questions.get("part_b", []))
+
+    for i, q in enumerate(generated_questions.get("part_c", []), start=start_q):
+        pdf.drawString(60, y, f"Q{i}. {q['question_text']} ({q['marks']} Marks)")
+        y -= 25
+
+    pdf.save()
+
+    buffer.seek(0)
+
+    response = make_response(buffer.getvalue())
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=question_paper.pdf"
+
+    return response
 
 @app.route("/add_hod", methods=["GET", "POST"])
 def add_hod():
@@ -554,6 +701,15 @@ def add_hod():
             """
             cursor.execute(query, (name, email, password, department, address))
             conn.commit()
+            activity_cursor = conn.cursor()
+
+            activity_cursor.execute("""
+             INSERT INTO activity_log (activity_text)
+             VALUES (%s)
+            """, ("New HOD added to system",))
+
+            conn.commit()
+            activity_cursor.close()
 
             new_user_id = cursor.lastrowid
 
@@ -576,10 +732,9 @@ def view_hods():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT user_id, name, email, department, address
-        FROM users
-        WHERE role='hod'
-        ORDER BY user_id DESC
+    SELECT user_id, name, email, department
+    FROM users
+    WHERE role='hod'
     """)
     hods = cursor.fetchall()
 
@@ -804,6 +959,15 @@ def approve(qid):
     """, (session["user_id"], qid))
 
     conn.commit()
+    activity_cursor = conn.cursor()
+
+    activity_cursor.execute("""
+    INSERT INTO activity_log (activity_text)
+    VALUES (%s)
+""", ("Question approved by HOD",))
+
+    conn.commit()
+    activity_cursor.close()
     cursor.close()
     conn.close()
 
@@ -1087,7 +1251,7 @@ def faculty_dashboard():
 
     cursor.close()
     conn.close()
-
+ 
     return render_template(
         "faculty_dashboard.html",
         profile=profile,
